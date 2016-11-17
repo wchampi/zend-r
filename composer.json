@@ -8,6 +8,9 @@
     "authors": [
         {"name": "Wilson Champi", "email": "wchampi86@gmail.com"}
     ],
+    "include-path": [
+        "lib/"
+    ],
     "require": {
         "php": ">=5.2.3"
     },
