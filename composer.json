@@ -1,0 +1,17 @@
+{
+    "name": "wchampi/zend-r",
+    "type": "library",
+    "description": "Integracion Doctrine, Zend, NetBeans para la generacion automatica de CRUD, BD y modelo Los componentes de ZendR se basaron en RAD",
+    "keywords": ["zend", "zendr", "doctrine", "rad"],
+    "homepage": "https://github.com/wchampi/zend-r",
+    "license": "MIT",
+    "authors": [
+        {"name": "Wilson Champi", "email": "wchampi86@gmail.com"}
+    ],
+    "require": {
+        "php": ">=5.2.3",
+    },
+    "autoload": {
+        "psr-0": { "ZendR_": "lib/" }
+    }
+}
