@@ -214,7 +214,7 @@ class ZendR_Application_Resource_Doctrine extends Zend_Application_Resource_Reso
 
         return $this;
     }
-    
+
     protected function _initConnections()
     {
         $connections = array();
@@ -231,11 +231,15 @@ class ZendR_Application_Resource_Doctrine extends Zend_Application_Resource_Reso
                 throw new Zend_Application_Resource_Exception("Invalid DSN on $key.");
             }
 
-            $dsn = (is_array($value['dsn']))
-                ? $this->_buildDsnFromArray($value['dsn'])
-                : $value['dsn'];
+            if (is_string($value['dsn']) && array_key_exists('user', $value) && array_key_exists('pass', $value)) {
+                $conn = Doctrine_Manager::connection(array($value['dsn'], $value['user'], $value['pass']), $key);
+            } else {
+                $dsn = (is_array($value['dsn']))
+                     ? $this->_buildDsnFromArray($value['dsn'])
+                     : $value['dsn'];
 
-            $conn = Doctrine_Manager::connection($dsn, $key);
+                $conn = Doctrine_Manager::connection($dsn, $key);
+            }
 
             if (array_key_exists('charset', $value)) {
                 $conn->setCharset($value['charset']);
