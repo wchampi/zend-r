@@ -27,7 +27,7 @@ class ZendR_Data_Csv
             }
             $line = '(' . implode(',', $rowDb) . ')';
             $rowsDb[] = $line;
-            
+
             if ($cont % 10000 == 0) {
                 $query = "INSERT INTO " . $table . ' (' . $columns . ') VALUES ' . implode(',', $rowsDb) . ';';
                 $conn->exec($query);
@@ -41,13 +41,13 @@ class ZendR_Data_Csv
         }
     }
 
-    public static function export($query, $file, $separator, Doctrine_Connection $conn, $titulos = '')
+    public static function export($query, $file, $separator, $conn, $titulos = '')
     {
-        file_put_contents($file, @iconv('UTF-8', 'Windows-1252//TRANSLIT', ZendR_String::parseString($titulos)->toUTF8()->__toString()));
-        
+        file_put_contents($file, @iconv('UTF-8', 'Windows-1252//TRANSLIT', ZendR_String::parseString($titulos)->toUTF8()->__toString()) . "\n");
+
         $stm = $conn->prepare($query);
         $stm->execute();
-        
+
         $rows = $stm->fetchAll(PDO::FETCH_ASSOC);
         foreach ($rows as $row) {
             self::filePutCsv($file, $row);
@@ -77,10 +77,10 @@ class ZendR_Data_Csv
                 return @iconv('ISO-8859-1', 'Windows-1252//TRANSLIT//IGNORE', $string);
             } else {
                 return $string;
-            } 
+            }
         } else {
             return @iconv($codification, 'Windows-1252//TRANSLIT//IGNORE', $string);
-        }    
+        }
     }
 
     public static function prepareFieldVal($val)
