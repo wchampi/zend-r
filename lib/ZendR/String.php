@@ -327,55 +327,42 @@ class ZendR_String
         return preg_replace('!\s+!u', ' ', $string);
     }
 
-    public static function encrypt($sValue, $sSecretKey, $cbc = false)
+    public static function encrypt($sValue, $key, $cbc = false)
     {
-        if ($cbc) {
-            $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_CBC);
-            $iv = mcrypt_create_iv($iv_size, MCRYPT_RAND);
-
-            $data = str_repeat(' ', $iv_size) . $sValue;
-            $secret = mcrypt_encrypt(MCRYPT_RIJNDAEL_256, self::makeSecretKey($sSecretKey), $data, MCRYPT_MODE_CBC, $iv);
-
-            return base64_encode($secret);
-        } else {
-            return rtrim(
-               base64_encode(
-                   mcrypt_encrypt(
-                       MCRYPT_RIJNDAEL_256, self::makeSecretKey($sSecretKey), $sValue, MCRYPT_MODE_ECB, mcrypt_create_iv(
-                           mcrypt_get_iv_size(
-                               MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB
-                           ), MCRYPT_RAND)
-                   )
-               ), "\0"
-            );
+        if (!function_exists("openssl_encrypt")) {
+            throw new Exception("ZendR::encrypt needs openssl php module.");
         }
+
+        $method = 'AES-256-ECB';
+        if ($cbc === true) {
+            $method = 'AES-256-CBC';
+        }
+        $ivSize = openssl_cipher_iv_length($method);
+        $iv     = openssl_random_pseudo_bytes($ivSize);
+        $data   = openssl_encrypt($sValue, $method, $key, OPENSSL_RAW_DATA, $iv);
+
+        return base64_encode($iv . $data);
     }
 
-    public static function decrypt($sValue, $sSecretKey, $cbc = false)
+    public static function decrypt($sValue, $key, $cbc = false)
     {
-        if ($cbc) {
-            $data = base64_decode($sValue);
-
-            $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_CBC);
-            $iv = substr($data, 0, $iv_size);
-            $encData = substr($data, $iv_size);
-            $decData = mcrypt_decrypt(MCRYPT_RIJNDAEL_256, self::makeSecretKey($sSecretKey), $encData, MCRYPT_MODE_CBC, $iv);
-
-            return $decData;
-        } else {
-            return rtrim(
-                mcrypt_decrypt(
-                    MCRYPT_RIJNDAEL_256, self::makeSecretKey($sSecretKey), base64_decode($sValue), MCRYPT_MODE_ECB, mcrypt_create_iv(
-                        mcrypt_get_iv_size(
-                            MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB
-                        ), MCRYPT_RAND
-                    )
-                ), "\0"
-            );
+        if (!function_exists("openssl_decrypt")) {
+            throw new Exception("ZendR::decrypt needs openssl php module.");
         }
+        $sValue = base64_decode($sValue);
+
+        $method = 'AES-256-ECB';
+        if ($cbc === true) {
+            $method = 'AES-256-CBC';
+        }
+        $ivSize = openssl_cipher_iv_length($method);
+        $iv     = substr($sValue, 0, $ivSize);
+        $data   = substr($sValue, $ivSize);
+        $clear  = openssl_decrypt($data, $method, $key, OPENSSL_RAW_DATA, $iv);
+        return $clear;
     }
 
-	private static function makeSecretKey($value)
+    private static function makeSecretKey($value)
     {
         if (strlen($value) < 16) {
             $value = str_pad($value, 16, "\0");
