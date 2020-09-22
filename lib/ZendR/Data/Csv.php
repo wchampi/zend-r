@@ -64,22 +64,22 @@ class ZendR_Data_Csv
         file_put_contents($file, $rowString, FILE_APPEND);
     }
 
-    public static function prepareString($string, $codification = null)
+    public static function prepareString($string, $codification = null, $toCodification = 'Windows-1252')
     {
-            $string = str_replace(array(chr(13), chr(10), '"'), array(' ', ' ', '""'), $string);
+        $string = str_replace(array(chr(13), chr(10), '"'), array(' ', ' ', '""'), $string);
         if ($codification == null) {
             $encode = ZendR_String::parseString($string)->encode();
             if ($encode == ISO_8859_1) {
-                return @iconv('ISO-8859-1', 'Windows-1252//TRANSLIT//IGNORE', $string);
+                return @iconv('ISO-8859-1', $toCodification . '//TRANSLIT//IGNORE', $string);
             } elseif ($encode == UTF_8) {
-                return @iconv('UTF-8', 'Windows-1252//TRANSLIT//IGNORE', utf8_encode($string));
+                return @iconv('UTF-8', $toCodification . '//TRANSLIT//IGNORE', $string);
             } elseif ($encode == ASCII) {
-                return @iconv('ISO-8859-1', 'Windows-1252//TRANSLIT//IGNORE', $string);
+                return @iconv('ISO-8859-1', $toCodification . '//TRANSLIT//IGNORE', $string);
             } else {
                 return $string;
             }
         } else {
-            return @iconv($codification, 'Windows-1252//TRANSLIT//IGNORE', $string);
+            return @iconv($codification, $toCodification . '//TRANSLIT//IGNORE', $string);
         }
     }
 
