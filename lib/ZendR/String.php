@@ -327,35 +327,37 @@ class ZendR_String
         return preg_replace('!\s+!u', ' ', $string);
     }
 
-    public static function encrypt($sValue, $key, $cbc = false)
+    public static function encrypt($sValue, $key, $cbc = true)
     {
         if (!function_exists("openssl_encrypt")) {
             throw new Exception("ZendR::encrypt needs openssl php module.");
         }
 
-        $method = 'AES-256-ECB';
-        if ($cbc === true) {
-            $method = 'AES-256-CBC';
-        }
+        $method = 'aes-256-cbc';
         $ivSize = openssl_cipher_iv_length($method);
+	if ($ivSize == 0) {
+	    $method = 'AES-256-CBC';
+            $ivSize = openssl_cipher_iv_length($method);
+	}
         $iv     = openssl_random_pseudo_bytes($ivSize);
         $data   = openssl_encrypt($sValue, $method, $key, OPENSSL_RAW_DATA, $iv);
 
         return base64_encode($iv . $data);
     }
 
-    public static function decrypt($sValue, $key, $cbc = false)
+    public static function decrypt($sValue, $key, $cbc = true)
     {
         if (!function_exists("openssl_decrypt")) {
             throw new Exception("ZendR::decrypt needs openssl php module.");
         }
         $sValue = base64_decode($sValue);
 
-        $method = 'AES-256-ECB';
-        if ($cbc === true) {
-            $method = 'AES-256-CBC';
-        }
+	$method = 'aes-256-cbc';
         $ivSize = openssl_cipher_iv_length($method);
+	if ($ivSize == 0) {
+	    $method = 'AES-256-CBC';
+            $ivSize = openssl_cipher_iv_length($method);
+	}
         $iv     = substr($sValue, 0, $ivSize);
         $data   = substr($sValue, $ivSize);
         $clear  = openssl_decrypt($data, $method, $key, OPENSSL_RAW_DATA, $iv);
